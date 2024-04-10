@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from Network import QNetwork
 from ReplyBuffer import ReplyBuffer
+import matplotlib.pyplot as plt
 import os
 
 class Agent():
@@ -23,6 +24,7 @@ class Agent():
         self.seed = seed
         self.HP = HP
         self.device = device
+        self.losses_value = []
 
         #Network
         self.qnet_local = QNetwork(self.state_size, self.action_size, seed).to(self.device)
@@ -86,6 +88,7 @@ class Agent():
         q_expected = self.qnet_local(states).gather(1, actions)
 
         loss = F.mse_loss(q_expected, q_targets)
+        self.losses_value.append(loss.item())
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -103,6 +106,9 @@ class Agent():
             target model (pytorch model)
             tau (float)
         """
-        for target_param, locla_param in zip(target_model.paramters(), local_model.parameters()):
-            target_param.data.copy(tau * local_model.data + (1.0-tau) * target_model.data)
+        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
+            target_param.data.copy_(tau * local_param.data + (1.0-tau) * target_param.data)
             
+
+    def plot_loss(self):
+        return self.losses_value
