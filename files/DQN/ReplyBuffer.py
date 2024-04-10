@@ -38,8 +38,4 @@ class ReplyBuffer:
         return (states, actions, rewards, next_states, dones)
     
     def __len__(self):
-        return len(self.memory)
-    
-
-
-    
+        return len(self.memory)    
