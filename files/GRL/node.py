@@ -20,5 +20,6 @@ class Node:
 
     def create_data(self):
         data = {'substations': np.array(self.extract_substation_data()),
-                'lines': np.array(self.extract_line_data())}
-        return data
+                'lines': np.array(self.extract_line_data()).T}
+        return data, self.obs.connectivity_matrix()
+    
