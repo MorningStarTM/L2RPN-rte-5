@@ -19,7 +19,9 @@ class Node:
         return self.obs.p_or, self.obs.q_or, self.obs.v_or, self.obs.a_or, self.obs.theta_or, self.obs.p_ex, self.obs.q_ex, self.obs.v_ex, self.obs.a_ex, self.obs.theta_ex, self.obs.rho, self.obs.line_status, self.obs.time_before_cooldown_line, self.obs.time_next_maintenance, self.obs.duration_next_maintenance
 
     def create_data(self):
-        data = {'substations': np.array(self.extract_substation_data()),
+        data = {'substations': np.array([self.extract_substation_data()]),
                 'lines': np.array(self.extract_line_data()).T}
         return data, self.obs.connectivity_matrix()
+    
+
     
