@@ -34,17 +34,16 @@ class GCNLayer(nn.Module):
         self.D_neg_sqrt = torch.diag_embed(torch.diag(torch.pow(self.D, -0.5)))
         
         # Initialise the weight matrix as a parameter
-        self.W = nn.Parameter(torch.rand(input_dim, output_dim))
+        self.W = nn.Parameter(torch.rand(output_dim, input_dim))
 
     def forward(self, X:torch.Tensor):
         # D^-1/2 * (A_hat * D^-1/2)
         support_1 = torch.matmul(self.D_neg_sqrt, torch.matmul(self.A_hat, self.D_neg_sqrt))
         
         # (D^-1/2 * A_hat * D^-1/2) * (X * W)
-        support_2 = torch.matmul(support_1, torch.matmul(X, self.W))
+        support_2 = torch.matmul(support_1, torch.matmul(torch.tensor(X), self.W))
         
         # ReLU(D^-1/2 * A_hat * D^-1/2 * X * W)
         H = F.relu(support_2)
-
         return H
     
