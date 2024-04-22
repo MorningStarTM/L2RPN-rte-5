@@ -2,7 +2,8 @@ import torch
 import numpy as np
 
 class Node:
-    def __init__(self, obs):
+    def __init__(self, obs, env):
+        self.env = env
         self.obs = obs
         self.node_types = ['substation', 'load', 'generator', 'line']
 
@@ -40,5 +41,32 @@ class Node:
         # Return the combined feature array
         return feature_data, self.obs.connectivity_matrix()
     
+    def convert_obs(self, obs):
+        obs_vect = obs.to_vect()
+        obs_vect = torch.FloatTensor(obs_vect).unsqueeze(0)
+        length = self.env.action_space.dim_topo
+
+        rho_ = torch.zeros(obs_vect.size(0), length, device=self.device)
+        rho_[..., self.env.action_space.line_or_pos_topo_vect] = torch.tensor(obs.rho, device=self.device)
+        rho_[..., self.env.action_space.line_ex_pos_topo_vect] = torch.tensor(obs.rho, device=self.device)
+
+
+        p_ = torch.zeros(obs_vect.size(0), length, device=self.device)
+        p_[..., self.env.action_space.gen_pos_topo_vect] = torch.tensor(obs.gen_p, device=self.device)
+        p_[..., self.env.action_space.load_pos_topo_vect] = torch.tensor(obs.load_p, device=self.device)
+        p_[..., self.env.action_space.line_or_pos_topo_vect] = torch.tensor(obs.p_or, device=self.device)
+        p_[..., self.env.action_space.line_ex_pos_topo_vect] = torch.tensor(obs.p_ex, device=self.device)
+
+
+        danger_ = torch.zeros(obs_vect.size(0), length, device=self.device)
+        danger = obs.rho >= 0.98
+        danger_[..., self.env.action_space.line_or_pos_topo_vect] = torch.tensor(danger, device=self.device).float()
+        danger_[..., self.env.action_space.line_ex_pos_topo_vect] = torch.tensor(danger, device=self.device).float() 
+
+        state = torch.stack([p_, rho_, danger_], dim=2).to(self.device)
+
+        adj = (torch.FloatTensor(obs.connectivity_matrix()) + torch.eye(int(obs.dim_topo))).to(self.device)
+
+        return state, adj
 
     
