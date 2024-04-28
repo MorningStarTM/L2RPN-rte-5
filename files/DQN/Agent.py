@@ -25,6 +25,7 @@ class Agent():
         self.HP = HP
         self.device = device
         self.losses_value = []
+        self.scores = []
 
         #Network
         self.qnet_local = QNetwork(self.state_size, self.action_size, seed).to(self.device)
@@ -112,3 +113,6 @@ class Agent():
 
     def plot_loss(self):
         return self.losses_value
+    
+    def get_score(self, reward):
+        self.scores.append(reward)
