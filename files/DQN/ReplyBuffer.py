@@ -5,37 +5,37 @@ import numpy as np
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class ReplyBuffer:
-    def __init__(self, action_size, buffer_size, batch_size, seed):
-        """
-        Store the experience 
-
-        Args:
-            action_size (int)
-            buffer_size (int)
-            batch_szie (int)
-        """
-        self.action_size = action_size
-        self.memory = deque(maxlen=buffer_size)
-        self.batch_size = batch_size
-        self.experience = namedtuple("Experience", field_names=['state', 'action', 'reward', 'next_state', 'done'])
-        self.seed = random.seed(seed)
+class ReplayBuffer:
+    def __init__(self, MEM_SIZE, BATCH_SIZE):
+        self.mem_count = 0
+        self.MEM_SIZE = MEM_SIZE
+        self.BATCH_SIZE = BATCH_SIZE
+        
+        self.states = np.zeros((self.MEM_SIZE, 211),dtype=np.float32)
+        self.actions = np.zeros(self.MEM_SIZE, dtype=np.int64)
+        self.rewards = np.zeros(self.MEM_SIZE, dtype=np.float32)
+        self.states_ = np.zeros((self.MEM_SIZE, 211),dtype=np.float32)
+        self.dones = np.zeros(self.MEM_SIZE, dtype=np.bool_)
     
-    def add(self, state, action, reward, next_state, done):
-        exp = self.experience(state, action, reward, next_state, done)
-        self.memory.append(exp)
+    def add(self, state, action, reward, state_, done):
+        mem_index = self.mem_count % self.MEM_SIZE
+        
+        self.states[mem_index]  = state
+        self.actions[mem_index] = action
+        self.rewards[mem_index] = reward
+        self.states_[mem_index] = state_
+        self.dones[mem_index] =  1 - done
 
+        self.mem_count += 1
+    
     def sample(self):
-        """Randomly sample a batch of experiences from memory."""
-        experiences = random.sample(self.memory, k=self.batch_size)
+        MEM_MAX = min(self.mem_count, self.MEM_SIZE)
+        batch_indices = np.random.choice(MEM_MAX, self.BATCH_SIZE, replace=True)
+        
+        states  = self.states[batch_indices]
+        actions = self.actions[batch_indices]
+        rewards = self.rewards[batch_indices]
+        states_ = self.states_[batch_indices]
+        dones   = self.dones[batch_indices]
 
-        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
-        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(device)
-        rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
-        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
-        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
-  
-        return (states, actions, rewards, next_states, dones)
-    
-    def __len__(self):
-        return len(self.memory)    
+        return states, actions, rewards, states_, dones
