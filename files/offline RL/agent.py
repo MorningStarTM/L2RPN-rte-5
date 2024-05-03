@@ -4,7 +4,6 @@ import pickle
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import namedtuple
-from network import QNetwork
 import random
 from torch.nn.utils import clip_grad_norm_
 
@@ -13,8 +12,25 @@ SIMPLE Q LEARNING
 CONSERVATIVE Q LEARNING
 
 """
+class QNetwork(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super(QNetwork, self).__init__()
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.fc1 = nn.Linear(state_dim, 256)
+        self.fc2 = nn.Linear(256, 256)
+        self.fc3 = nn.Linear(256, state_dim)
+        self.fc4 = nn.Linear(state_dim, action_dim)
 
-class IQAgent:
+    def forward(self, X:torch.tensor):
+        x = self.fc1(X)
+        x = self.fc2(torch.relu(x))
+        x = self.fc3(torch.relu(x))
+        x = self.fc4(x)
+        return x
+    
+
+class DQAgent:
     def __init__(self, env, HP:dict):
         self.env = env
         self.obs_state = self.env.observation_space.n
