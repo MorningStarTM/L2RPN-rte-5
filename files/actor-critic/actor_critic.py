@@ -322,8 +322,10 @@ class GraphBasedAgent(object):
 
         self.actor_critic.optimizer.step()
 
-    def save_model(self, pathdir):
-        T.save(self.actor_critic.state_dict(), pathdir)
+    def save_model(self, pathdir, i):
+        os.makedirs(pathdir, exist_ok=True)
+        T.save(self.actor_critic.state_dict(), os.path.join(pathdir, "GraphBasedAC.pth"))
+        print("Model saving")
 
     def load_model(self, pathdir):
-        T.load(self.actor_critic.state_dict(), pathdir)
+        self.actor_critic.load_state_dict(T.load(pathdir))
