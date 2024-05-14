@@ -65,6 +65,11 @@ class Converter:
         Converts a one hot encoding action to a grid2op action
         """
         return self.env.action_space(self.env_act_dict_list[one_hot_encoding_act.argmax().item()])
+    
+    def int_to_onehot(self, n):
+        v = [0] * 132
+        v[n] = 1
+        return np.array(v)
 
 class Node:
     def __init__(self, env):

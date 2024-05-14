@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch_geometric.nn as gnn
+import os
 
 class GenericNetwork(nn.Module):
     def __init__(self, HP:dict):
@@ -211,6 +212,15 @@ class ACAgent(object):
         (actor_loss + critic_loss).backward()
 
         self.actor_critic.optimizer.step()
+
+    
+    def save_model(self, path):
+        os.makedirs(path, exist_ok=True)
+        T.save(self.actor_critic.state_dict(), os.path.join(path, "actor_critic.pth"))
+
+    def load_model(self, path):
+        self.actor_critic.load_state_dict(T.load(path))
+
 
 
 
