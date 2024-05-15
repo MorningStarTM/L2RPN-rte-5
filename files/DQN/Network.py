@@ -1,33 +1,27 @@
-import torch
+import torch as T
 import numpy as np
 import random
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
-class QNetwork(nn.Module):
-    def __init__(self, state_size, action_size, seed):
-        """
-        building model for Deep Q Network
+import torch
 
-        Args:
-            state_size (int): Dimension of state/observation
-            actions_size (int): Dimension of action
-
-        """
-        super(QNetwork, self).__init__()
-        self.seed = torch.manual_seed(seed)
-        self.fc1 = nn.Linear(state_size, 364)
-        self.fc2 = nn.Linear(364, 364)
-        self.fc3 = nn.Linear(364, 182)
-        self.fc4 = nn.Linear(182, action_size)
+class DQN(torch.nn.Module):
+    '''
+    '''
+    def __init__(self, state_size=8, action_size=4, hidden_size=64):
+        '''
+        '''
+        super(DQN, self).__init__()
+        self.layer1 = torch.nn.Linear(state_size, hidden_size)
+        self.layer2 = torch.nn.Linear(hidden_size, hidden_size)
+        self.layer3 = torch.nn.Linear(hidden_size, action_size)
 
     def forward(self, state):
-        x = self.fc1(state)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = F.relu(x)
-        x = self.fc3(x)
-        x = F.relu(x)
-        return self.fc4(x)
-    
+        '''
+        '''
+        x = torch.relu(self.layer1(state))
+        x = torch.relu(self.layer2(x))
+        return self.layer3(x)
     
